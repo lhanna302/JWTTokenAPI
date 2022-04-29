@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const userService = require('../services/user');
 const authenticateToken = require('../middleware/authentication');
 
-router.get('/users/:id', authenticateToken, (req, res) => {
+router.get('/users/:id', authenticateToken, async (req, res) => {
     try{
 
         const row = await userService.getUserByUserId(req.params.id);
@@ -26,7 +26,7 @@ router.get('/users/:id', authenticateToken, (req, res) => {
     }
 });
 
-router.get('/users?email=:email', authenticateToken, (req, res) => {
+router.get('/users?email=:email', authenticateToken, async (req, res) => {
     try{
         const row = await userService.getUserByEmail(req.query.email);
         if(row == null){
@@ -49,6 +49,7 @@ router.get('/users?email=:email', authenticateToken, (req, res) => {
 
 router.post('/signup', async function(req, res, next) {
     try{
+        console.log('signup');
         const user = req.body.user;
         const existingUser = userService.getUserByEmail(user.email);
         let createdUser;
@@ -69,7 +70,7 @@ router.post('/signup', async function(req, res, next) {
 });
 
 
-router.post('/login',  authenticateToken, (req, res) => {
+router.post('/login',  authenticateToken, async (req, res) => {
     try{
         const user = req.body.user
         try{

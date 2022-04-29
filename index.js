@@ -8,7 +8,12 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-app.get('/', userRouter);
+app.get('/', (req, res) =>{
+    res.json({ message: "okay" });
+ });
+
+ app.use("/users", userRouter);
+console.log('yo dawg');
 app.use((err, req, res, next) =>{
     const statusCode = err.statusCode || 500;
     console.error(err.message, err.stack);

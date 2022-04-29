@@ -11,7 +11,7 @@ After that. . .
 1. `docker build -t jwt-token-api .`
 3. `docker network create jwt-token-network`
 3. `docker run --rm -d --name jwt-token-api --network jwt-token-network -p 8080:3000 jwt-token-api` 
-4. `docker run --rm -d --name mysql_server -p 3306:3306 -e MYSQL_DATABASE='user_db' -e MYSQL_USER='{user}' -e MYSQL_PASSWORD='{password}' --network jwt-token-network mysql:8.0`
+4. `docker run --rm -d --name mysql_server -p 8080:3306 -e MYSQL_DATABASE='user_db' -e MYSQL_USER='{user}' -e MYSQL_PASSWORD='{password}' --network jwt-token-network mysql:8.0`
 5. To query, hit `localhost:8080/{route}/`
 
 
