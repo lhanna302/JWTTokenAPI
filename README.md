@@ -1,10 +1,11 @@
 ** Build Instructions
 
 Create a `.env` file at the `JWTTokenAPI`. This file should include:
-
+```
 ACCESS_TOKEN_SECRET= {randomly generated secret}
 user= {user capable of read/write for MySQL}
 password= {corresponding password}
+```
 
 After that. . .
 1. `docker build -t jwt-token-api .`
