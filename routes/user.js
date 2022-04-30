@@ -1,4 +1,5 @@
-require('dotenv').config;
+const path = require('path');
+require('dotenv').config( {path:path.resolve(__dirname,'../.env')});
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
@@ -7,30 +8,9 @@ const authenticateToken = require('../middleware/authentication');
 
 router.get('/users/:id', authenticateToken, async (req, res) => {
     try{
-
         const row = await userService.getUserByUserId(req.params.id);
         if(row == null){
-            res.send(400);
-        }
-        if(row.length == 0){
-            res.sendStatus(404);
-        }
-        else{
-            res.json(rows);
-        }
-    }
-  
-    catch(err){
-        console.error(`Error while retrieving location information for ${req.params.id}`, err.message);
-        res.send(500);
-    }
-});
-
-router.get('/users?email=:email', authenticateToken, async (req, res) => {
-    try{
-        const row = await userService.getUserByEmail(req.query.email);
-        if(row == null){
-            res.send(400);
+            res.sendStatus(400);
         }
         if(row.length == 0){
             res.sendStatus(404);
@@ -42,48 +22,71 @@ router.get('/users?email=:email', authenticateToken, async (req, res) => {
   
     catch(err){
         console.error(`Error while retrieving location information for ${req.params.id}`, err.message);
-        res.send(500);
+        res.sendStatus(500);
+    }
+});
+
+router.get('/users', authenticateToken, async (req, res) => {
+    try{
+        const row = await userService.getUserByEmail(req.query.email);
+        if(row == null){
+            res.sendStatus(400);
+        }
+        else if(row.length == 0){
+            res.sendStatus(404);
+        }
+        else{
+            res.json(row);
+        }
+    }
+  
+    catch(err){
+        console.error(`Error while retrieving location information for ${req.params.id}`, err.message);
+        res.sendStatus(500);
     }
 });
 
 
 router.post('/signup', async function(req, res, next) {
     try{
-        console.log('signup');
         const user = req.body.user;
-        const existingUser = userService.getUserByEmail(user.email);
-        let createdUser;
-        if(existingUser == null) {
-            createdUser = userService.create(user);
+        const existingUser = await userService.getUserByEmail(user.email);
+        if(existingUser == '') {
+            const createdUser = await userService.create(user);
             if(createdUser != null) {
-                res.send(201);
+                res.sendStatus(201);
             }
             else{
-                res.send(400);
+                res.sendStatus(400);
             }
+        }
+        else{
+            res.sendStatus(200);
         }
     }
     catch(err){
         console.error(`Error while signing up`, err);
-        res.send(500);
+        res.sendStatus(500);
     }
 });
 
 
-router.post('/login',  authenticateToken, async (req, res) => {
+router.post('/login', async function(req, res) {
     try{
         const user = req.body.user
         try{
-            let username, password = { user };
-            const isVerifiedUser = userService.verifyUserAuthentication(username, password);
-            if(isVerifiedUser == null) res.send(400);
-            if(!isVerifiedUser) res.send(401);
+            const { email, password } =  user;
+            const isVerifiedUser = await userService.verifyUserAuthentication(email, password);
+            if(isVerifiedUser == null) res.sendStatus(400);
+            else if(!isVerifiedUser) res.sendStatus(401);
+            else {
+                const token = generateAccessToken(user);
+                res.json({ accessToken: token});
+            }
         }
-        catch{
+        catch(err){
             console.error(`Error while attempting user authentication`, err);
         }
-        const token = generateAccessToken(user);
-        res.json({ accessToken: token});
     }
     catch(err){
         console.error(`Error while signing up`, err)

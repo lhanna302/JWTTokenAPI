@@ -1,11 +1,11 @@
 const db = require('../connection');
-const UUID = require('uuid');
+const { v4: uuid4v, validate: isValidUUID } = require('uuid');
 
 async function create(user){
-    let email, username, password = { user };
-    if(isValidEmail(email) && isValidUserName(username) && password){
-        const userId = UUID();
-        row = await db.query(`INSERT into user(username, email, user_id, user_password) values (${username}, ${email}, ${userId}, ${password});`);
+    const { email, username, password } =  user;
+    if(isValidEmail(user.email) && isValidUserName(username) && password){
+        const userId = uuid4v();
+        row = await db.query(`INSERT into user(username, email, user_id, user_password) values ("${username}", "${email}", "${userId}", "${password}");`);
         return row;
     }
     return null;
@@ -14,7 +14,7 @@ async function create(user){
 async function getUserByEmail(email){
     if(isValidEmail(email)){
         const row = await db.query(
-            `SELECT username, email, user_id from users where email = ${email};`
+            `SELECT username, email, user_id from user where email = "${email}";`
         );
         return row;
     }
@@ -22,19 +22,19 @@ async function getUserByEmail(email){
 }
 
 async function getUserByUserId(userId){
-    if(UUID.isValidUUID(userId)){
+    if(isValidUUID(userId)){
         const row = await db.query(
-            `SELECT username, email, user_id from users where user_id = ${userId};`
+            `SELECT username, email, user_id from user where user_id = "${userId}";`
         );
         return row;
     }
     return null;
 }
 
-async function verifyUserAuthentication(username, password){
-    if(isValidUserName(username)) {
-        const retrievedPassword = await db.query(`SELECT user_password from users where username = ${username}`);
-        if(password === retrievedPassword) return true;
+async function verifyUserAuthentication(email, password){
+    if(isValidEmail(email)) {
+        const data = await db.query(`SELECT user_password from user where email = "${email}"`);
+        if(password === data[0].user_password) return true;
         return false;
     }
     return null;
